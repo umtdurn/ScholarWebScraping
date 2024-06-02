@@ -1,0 +1,175 @@
+﻿@model List<Articles>
+@{
+    ViewData["Title"] = "Home Page";
+
+}
+
+<style>
+    .search-container {
+        position: relative;
+        width: 100%;
+        max-width: 850px; /* İstenilen genişliği buradan ayarlayabilirsiniz */
+    }
+
+        .search-container input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            padding-right: 40px; /* Buton genişliğine bağlı olarak ayarlayın */
+            font-size: 16px; /* İstenilen boyut */
+            border: 2px solid #ccc; /* Kenarlık stili */
+            border-radius: 20px; /* Yuvarlak kenarlar */
+            box-sizing: border-box; /* Padding'i genişliğe dahil et */
+        }
+
+        .search-container button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 40px; /* İstenilen genişlik */
+            height: 100%;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 0 20px 20px 0; /* Sağ üst ve sağ alt köşe yuvarlak */
+        }
+
+        .search-container svg {
+            fill: #333; /* Simge rengi */
+        }
+</style>
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-12 d-flex justify-content-center input-group mb-3">
+            <form class="form-group col-8" asp-action="Index" asp-controller="Home" type="post">
+                <div class="search-container">
+                    <input type="text" class="form-control" name="input" placeholder="Arama yapılacak anahtar kelimeyi giriniz">
+                    <button type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                        </svg>
+                    </button>
+                </div>
+                @if (TempData["DidYouMean"] != null)
+                {
+                    <p>
+                        Bunu mu demek istediniz:<a id="didYouMean" href="#">@TempData["DidYouMean"]</a>
+                    </p>
+                }
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <!-- Basic table -->
+    <section id="basic-datatable">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <table class="datatables-basic table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Tür</th>
+                                <th>Tarih</th>
+                                <th>Alıntı Sayısı</th>
+                                <th>Url</th>
+                                <th>Detay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td></td>
+                                    <td>@item.Title</td>
+                                    <td>@item.PublicationType</td>
+                                    <td>@item.PublicationDate</td>
+                                    <td>@item.CitationCount</td>
+                                    <td>@item.Url</td>
+                                    <td>
+                                        @*<a href="@Url.Action("ArticleDetails","Home",new { id = item.Id})">Detay</a>*@
+                                        <a asp-action="ArticleDetails" asp-controller="Home" asp-route-id="@item.Id">Detay</a>
+                                        @*<button>Detay</button>*@
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!--/ Basic table -->
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<script>
+    $('#didYouMean').on('click', (e) => {
+        e.preventDefault();
+
+        var endpointUrl = '@Url.Action("DergiPark","Home")';
+        var _input = '@TempData["DidYouMean"]';
+
+        $.ajax({
+            url: endpointUrl,
+            type : 'POST',
+            data : {
+                input : _input
+            }
+        });
+    });
+
+
+    $(document).ready(function () {
+        // DataTable başlatma
+        //$.fn.dataTable.moment('DD/MM/YYYY'); // Burada kendi tarih formatınızı belirtin
+        $.fn.dataTable.moment('DD-MM-YYYY');
+
+        $('.datatables-basic').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.22/i18n/Turkish.json"
+            },
+            "columns": [
+                { "data": null, "defaultContent": '', "className": 'control', "orderable": false }, // İlk sütun için kontrol
+                { "data": "Title" },
+                { "data": "PublicationType" },
+                { "data": "PublicationDate"},
+                { "data": "CitationCount" },
+                {
+                    "data": "Url",
+                    "render": function (data, type, full, meta) {
+                        return '<a href="' + data + '">Link</a>';
+                    }
+                }, // URL'yi link olarak göster
+                { "data": "Id" }
+            ],
+            "columnDefs": [
+                {
+                    "targets": 3,
+                    "render": function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            // Ekranda gösterim ve filtreleme için DD-MM-YYYY formatını koru
+                            return data;
+                        } else if (type === 'sort' || type === 'type') {
+                            // Sıralama için YYYY-MM-DD formatına dönüştür
+                            var date = moment(data, 'DD-MM-YYYY');
+                            return date.isValid() ? date.format('YYYY-MM-DD') : '';
+                        }
+                        return data;
+                    }
+                }
+            ],
+            "order": [[1, 'asc']], // Varsayılan olarak Ad sütununa göre sırala
+            "responsive": true,
+            // AJAX yoluyla veri çekme veya server-side processing yapılacaksa burada belirtilebilir
+        });
+    });
+
+</script>
+

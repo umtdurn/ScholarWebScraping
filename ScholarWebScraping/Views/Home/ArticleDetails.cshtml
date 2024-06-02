@@ -1,0 +1,98 @@
+﻿@model Articles
+
+@*<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <div class="row col-md-12 ml-2">
+                <h2 class="card-title">@Model.Title</h2>
+            </div>
+        </div>
+    </div>
+</div>*@
+
+<div class="card-body">
+    <h5 class="mb-75">Makale Adı</h5>
+    <p class="card-text">
+        @Model.Title
+    </p>
+    <div class="mt-2">
+        <a asp-action="DownloadPdf"
+           asp-controller="Home"
+           asp-route-url="@Model.PdfUrl"
+           asp-route-title="@Model.Title">
+            PDF
+        </a>
+    </div>
+
+    <div class="mt-2">
+        <h5 class="mb-75">Yayın Türü</h5>
+        <p class="card-text">@Model.PublicationType</p>
+    </div>
+    <div class="mt-2">
+        <h5 class="mb-75">Yazarlar</h5>
+        @if (Model!.AuthorNames is not null)
+        {
+            if (Model.AuthorNames.Count > 0)
+            {
+                @foreach (var item in Model.AuthorNames)
+                {
+                    <p class="card-text">@item</p>
+                }
+            }
+        }
+    </div>
+    <div class="mt-2">
+        <h5 class="mb-75">Tarih</h5>
+        <p class="card-text">@Model.PublicationDate</p>
+    </div>
+    <div class="mt-2">
+        <h5 class="mb-50">Yayıncı Adı</h5>
+        <p class="card-text mb-0">@Model.PublisherName</p>
+    </div>
+    <div class="mt-2">
+        <h5 class="mb-50">Arama Motoru Anahtar Kelimesi</h5>
+        <p class="card-text mb-0">@Model.SearchKeywords</p>
+    </div>
+    <div class="mt-2">
+        <h5 class="mb-50">Makale Anahtar Kelimeleri</h5>
+        <p class="card-text mb-0">@Model.ArticleKeywords</p>
+    </div>
+    <div class="mt-2">
+        <h5 class="mb-50">Özet</h5>
+        <p class="card-text mb-0">@Model.Abstract</p>
+    </div>
+    <div class="mt-2">
+        <h5 class="mb-50">Referanslar</h5>
+        <ul>
+            @if (Model!.References is not null)
+            {
+                if (Model.References.Count > 0)
+                {
+                    @foreach (var item in Model.References)
+                    {
+                        <li>@item</li>
+                    }
+                }
+            }
+        </ul>
+    </div>
+    @if (!Model.Doi!.Equals("YOK"))
+    {
+        <div class="mt-2">
+            <h5 class="mb-50">DOI</h5>
+            <p class="card-text mb-0">@Model.Doi</p>
+        </div>
+    }
+    <div class="mt-2">
+        <h5 class="mb-50">URL</h5>
+        <p class="card-text mb-0">@Model.Url</p>
+    </div>
+    @*<div class="mt-2">
+        <a asp-action="DownloadPdf"
+           asp-controller="Home"
+           asp-route-url="@Model.PdfUrl"
+           asp-route-title="@Model.Title">
+            Detay
+        </a>
+    </div>*@
+</div>
